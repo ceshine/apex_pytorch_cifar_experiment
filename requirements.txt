@@ -1,0 +1,3 @@
+python-telegram-bot
+pretrainedmodels==0.7.4
+https://github.com/ceshine/pytorch_helper_bot/archive/apex.zip
