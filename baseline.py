@@ -106,30 +106,30 @@ class CifarBot(BaseBot):
         return accuracy * -1
 
 
-def get_cifar10_dataset():
+def get_cifar10_dataset(batch_size=512):
     trainset = torchvision.datasets.CIFAR10(
         root='./data', train=True, download=True, transform=TRANSFORM_TRAIN)
     train_dl = torch.utils.data.DataLoader(
-        trainset, batch_size=512, shuffle=True, num_workers=4, pin_memory=True)
+        trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, drop_last=True)
     validset = torchvision.datasets.CIFAR10(
         root='./data', train=False, download=True, transform=TRANSFORM_TEST)
     valid_dl = torch.utils.data.DataLoader(
-        validset, batch_size=1024, shuffle=False, num_workers=4, pin_memory=True)
+        validset, batch_size=batch_size*2, shuffle=False, num_workers=1, pin_memory=True)
     return train_dl, valid_dl
 
 
-def get_resnet():
+def get_resnet(pretrained=None):
     model = pretrainedmodels.__dict__["resnet152"](
-        num_classes=10, pretrained=None)
+        pretrained=pretrained)
     model.avgpool = nn.AdaptiveAvgPool2d((1, 1))
     model.last_linear = nn.Linear(model.last_linear.in_features, 10)
     model.to("cuda:0")
     return model
 
 
-def get_densenet():
+def get_densenet(pretrained=None):
     model = pretrainedmodels.__dict__["densenet161"](
-        num_classes=10, pretrained=None)
+        pretrained=pretrained)
     model.last_linear = nn.Linear(model.last_linear.in_features, 10)
 
     def logits(self, features):
@@ -144,9 +144,9 @@ def get_densenet():
     return model
 
 
-def get_se_resnext():
+def get_se_resnext(pretrained=None):
     model = pretrainedmodels.__dict__["se_resnext50_32x4d"](
-        num_classes=10, pretrained=None)
+        pretrained=pretrained)
     model.last_linear = nn.Linear(model.last_linear.in_features, 10)
     model.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
     model.to("cuda:0")
@@ -155,7 +155,7 @@ def get_se_resnext():
 
 @telegram_sender(token=BOT_TOKEN, chat_id=CHAT_ID)
 def train():
-    train_dl, valid_dl = get_cifar10_dataset()
+    train_dl, valid_dl = get_cifar10_dataset(512)
     steps_per_epoch = len(train_dl)
 
     model = get_densenet()
@@ -171,10 +171,10 @@ def train():
     bot = CifarBot(
         model, train_dl, valid_dl,
         optimizer=optimizer, echo=True, avg_window=steps_per_epoch // 5,
-        device="cuda:0", clip_grad=10.
+        device="cuda:0", clip_grad=1.
     )
 
-    n_epochs = 10
+    n_epochs = 25
     n_steps = n_epochs * steps_per_epoch
     bot.train(
         n_steps,
@@ -188,7 +188,7 @@ def train():
         #     )
         # )
         scheduler=TriangularLR(
-            optimizer, 20, ratio=3, steps_per_cycle=n_steps)
+            optimizer, 1000, ratio=3, steps_per_cycle=n_steps)
     )
     print(f"GPU Memory Used: {get_gpu_memory_map()} MB")
     bot.remove_checkpoints(keep=1)

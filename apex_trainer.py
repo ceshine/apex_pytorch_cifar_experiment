@@ -26,7 +26,7 @@ from telegram_sender import telegram_sender
 
 @telegram_sender(token=BOT_TOKEN, chat_id=CHAT_ID)
 def train():
-    train_dl, valid_dl = get_cifar10_dataset()
+    train_dl, valid_dl = get_cifar10_dataset(batch_size=1024)
     steps_per_epoch = len(train_dl)
 
     model = get_densenet()
@@ -50,7 +50,7 @@ def train():
         device="cuda:0", clip_grad=1., use_amp=True
     )
 
-    n_epochs = 10
+    n_epochs = 50
     n_steps = n_epochs * steps_per_epoch
     bot.train(
         n_steps,
