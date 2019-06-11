@@ -11,14 +11,15 @@ import torchvision
 import pretrainedmodels
 from tqdm import tqdm
 from helperbot import (
-    TriangularLR, BaseBot, WeightDecayOptimizerWrapper
+    TriangularLR, BaseBot, WeightDecayOptimizerWrapper,
+    LearningRateSchedulerCallback
 )
 from apex import amp
 
 from adabound import AdaBound
 from baseline import (
     CifarBot, get_cifar10_dataset,
-    get_densenet, get_se_resnext, get_resnet,
+    get_densenet, get_se_resnext, get_resnet, get_wide_resnet
     get_gpu_memory_map, BOT_TOKEN, CHAT_ID
 )
 from telegram_sender import telegram_sender
@@ -29,7 +30,7 @@ def train():
     train_dl, valid_dl = get_cifar10_dataset(batch_size=1024)
     steps_per_epoch = len(train_dl)
 
-    model = get_densenet()
+    model = get_wide_resnet()
 
     # optimizer = WeightDecayOptimizerWrapper(optim.SGD(
     #     model.parameters(), lr=0.1,
@@ -40,28 +41,35 @@ def train():
     optimizer = WeightDecayOptimizerWrapper(optim.Adam(
         model.parameters(), lr=1.5e-3), 0.1)
     model, optimizer = amp.initialize(
-        model, optimizer, opt_level="O2"  # , keep_batchnorm_fp32=True,
-        # loss_scale="dynamic"
-    )
-
-    bot = CifarBot(
-        model, train_dl, valid_dl,
-        optimizer=optimizer, echo=True, avg_window=steps_per_epoch // 5,
-        device="cuda:0", clip_grad=1., use_amp=True
+        model, optimizer, opt_level="O2", keep_batchnorm_fp32=True,
+        loss_scale="dynamic"
     )
 
     n_epochs = 50
     n_steps = n_epochs * steps_per_epoch
+    bot = CifarBot(
+        model, train_dl, valid_dl,
+        optimizer=optimizer, echo=True,
+        avg_window=steps_per_epoch // 5,
+        device="cuda:0",
+        clip_grad=10.,
+        use_amp=True,
+        callbacks=[
+            LearningRateSchedulerCallback(
+                TriangularLR(
+                    optimizer, 100, ratio=4, steps_per_cycle=n_steps
+                )
+            )
+        ],
+        pbar=True
+    )
     bot.train(
         n_steps,
         snapshot_interval=steps_per_epoch,
         log_interval=steps_per_epoch // 5,
-        keep_n_snapshots=3,
-        scheduler=TriangularLR(
-            optimizer, 1000, ratio=3, steps_per_cycle=n_steps)
+        keep_n_snapshots=1
     )
     print(f"GPU Memory Used: {get_gpu_memory_map()} MB")
-    bot.remove_checkpoints(keep=1)
     bot.load_model(bot.best_performers[0][1])
     torch.save(bot.model.state_dict(), "cache/baseline.pth")
     bot.remove_checkpoints(keep=0)

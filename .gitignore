@@ -18,3 +18,4 @@ plots
 .mypy_cache
 pylintrc
 *.egg-info/
+*.fish

@@ -46,7 +46,8 @@ RUN sudo git clone https://github.com/NVIDIA/apex.git && \
 WORKDIR /home/$USERNAME
 
 RUN  pip install --upgrade pip && \
-    pip install pillow-simd && \
+    pip install pillow-simd python-telegram-bot pretrainedmodels && \
+    pip install https://github.com/ceshine/pytorch_helper_bot/archive/0.1.2.zip && \
     rm -rf ~/.cache/pip
 
 ENV CUDA_HOME=/usr/local/cuda
