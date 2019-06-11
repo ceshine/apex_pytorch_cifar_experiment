@@ -23,6 +23,7 @@ from helperbot.metrics import SoftmaxAccuracy
 from adabound import AdaBound
 from telegram_sender import telegram_sender
 from wide_resnet import Wide_ResNet
+from telegram_tokens import BOT_TOKEN, CHAT_ID
 
 TRANSFORM_TRAIN = transforms.Compose([
     transforms.RandomCrop(32, padding=4),
@@ -36,8 +37,6 @@ TRANSFORM_TEST = transforms.Compose([
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
     # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
 ])
-BOT_TOKEN = os.environ["BOT_TOKEN"]
-CHAT_ID = int(os.environ["CHAT_ID"])
 DEVICE = torch.device("cuda")
 
 
@@ -153,7 +152,7 @@ def train():
     )
     bot.train(
         n_steps,
-        snapshot_interval=steps_per_epoch // 3,
+        snapshot_interval=steps_per_epoch,
         log_interval=steps_per_epoch // 5,
         keep_n_snapshots=1
     )
