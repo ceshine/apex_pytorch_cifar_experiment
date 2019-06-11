@@ -60,7 +60,8 @@ def train():
             )
         ],
         metrics=[SoftmaxAccuracy()],
-        pbar=True
+        pbar=True,
+        use_amp=True
     )
     bot.train(
         n_steps,
