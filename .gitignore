@@ -19,3 +19,4 @@ plots
 pylintrc
 *.egg-info/
 *.fish
+telegram_tokens.py
