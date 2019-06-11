@@ -1,5 +1,4 @@
 import os
-import logging
 
 import numpy as np
 import torch
@@ -8,12 +7,12 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchvision.transforms as transforms
 import torchvision
-import pretrainedmodels
 from tqdm import tqdm
 from helperbot import (
     TriangularLR, BaseBot, WeightDecayOptimizerWrapper,
     LearningRateSchedulerCallback
 )
+from helperbot.metrics import SoftmaxAccuracy
 from apex import amp
 
 from adabound import AdaBound
@@ -48,12 +47,11 @@ def train():
     n_epochs = 50
     n_steps = n_epochs * steps_per_epoch
     bot = CifarBot(
-        model, train_dl, valid_dl,
+        model=model, train_loader=train_dl, val_loader=valid_dl,
         optimizer=optimizer, echo=True,
         avg_window=steps_per_epoch // 5,
-        device="cuda:0",
-        clip_grad=10.,
-        use_amp=True,
+        criterion=nn.CrossEntropyLoss(),
+        device=DEVICE, clip_grad=1.,
         callbacks=[
             LearningRateSchedulerCallback(
                 TriangularLR(
@@ -61,6 +59,7 @@ def train():
                 )
             )
         ],
+        metrics=[SoftmaxAccuracy()],
         pbar=True
     )
     bot.train(
