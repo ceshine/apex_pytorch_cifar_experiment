@@ -148,7 +148,8 @@ def train():
                 )
             )
         ],
-        metrics=[SoftmaxAccuracy()]
+        metrics=[SoftmaxAccuracy()],
+        monitor_metric="accuracy"
     )
     bot.train(
         n_steps,
