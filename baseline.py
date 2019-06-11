@@ -70,7 +70,7 @@ def get_cifar10_dataset(batch_size=512):
     trainset = torchvision.datasets.CIFAR10(
         root='./data', train=True, download=True, transform=TRANSFORM_TRAIN)
     train_dl = torch.utils.data.DataLoader(
-        trainset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True, drop_last=True)
+        trainset, batch_size=batch_size, shuffle=True, num_workers=2, pin_memory=True, drop_last=True)
     validset = torchvision.datasets.CIFAR10(
         root='./data', train=False, download=True, transform=TRANSFORM_TEST)
     valid_dl = torch.utils.data.DataLoader(
