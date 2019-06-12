@@ -22,6 +22,6 @@ Kaggle Kernel used: [APEX Experiment - Cifar 10](https://www.kaggle.com/ceshine/
 
 | Level                | Time      | GPU Memory | Validation Accuracy |
 |----------------------|-----------|------------|---------------------|
-| O0 (Pure FP32)       | 47min 01s | 5677 MB    | 87.49%              |
-| O1 (Mixed Precision) | 47min 34s | 6283 MB    | 88.51%              |
-| O2 (Mixed Precision) | 45min 34s | 5665 MB    | 87.74%              |
+| [O0 (Pure FP32)](https://www.kaggle.com/ceshine/apex-experiment-cifar-10?scriptVersionId=15544605)       | 47min 01s | 5677 MB    | 87.49%              |
+| [O1 (Mixed Precision)](https://www.kaggle.com/ceshine/apex-experiment-cifar-10?scriptVersionId=15544647) | 47min 34s | 6283 MB    | 88.51%              |
+| [O2 (Mixed Precision)](https://www.kaggle.com/ceshine/apex-experiment-cifar-10?scriptVersionId=15556913) | 45min 34s | 5665 MB    | 87.74%              |
